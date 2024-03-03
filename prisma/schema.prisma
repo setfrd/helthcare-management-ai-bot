@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  password    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  profile     UserProfile?
+  Appointment Appointment[] 
+  doctors     Doctor[]
+}
+
+model UserProfile {
+  id                Int       @id @default(autoincrement())
+  name              String?
+  age               Int?
+  height            String?
+  weight            String?
+  heartRate         String?
+  vo2Max            String?
+  user              User      @relation(fields: [userId], references: [id])
+  userId            Int       @unique
+  bloodType         String?
+  allergies         String?
+  medications       String?
+  medicalConditions String?
+}
+
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  doctorId    Int?  
+  date        DateTime
+  description String
+
+  user        User     @relation(fields: [userId], references: [id])
+  doctor      Doctor?  @relation(fields: [doctorId], references: [id]) // Make this optional
+
+  @@unique([doctorId, date])
+}
+
+
+model Doctor {
+  id        Int      @id @default(autoincrement())
+  name      String
+  specialty String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+
+  @@unique([name, userId])
+}
